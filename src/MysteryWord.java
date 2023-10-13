@@ -28,12 +28,13 @@ public class MysteryWord {
     try {
       File WordFile = new File("Woordlijst.txt");
       Scanner ListScanner = new Scanner(WordFile);
+      System.out.print(ListScanner);
       while (ListScanner.hasNext()) {
         String data = ListScanner.nextLine();
         this.Wordlist = Arrays.copyOf(this.Wordlist, this.Wordlist.length + 1);
         this.Wordlist[this.Wordlist.length - 1] = data;
       }
-      ListScanner.close();
+//      ListScanner.close();
       return this.Wordlist[ThreadLocalRandom.current().nextInt(Wordlist.length)];
     }
     catch (FileNotFoundException e){
