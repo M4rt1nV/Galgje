@@ -1,5 +1,4 @@
-import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Scanner;
 import java.util.concurrent.ThreadLocalRandom;
@@ -10,7 +9,6 @@ public class MysteryWord {
   char[] BlankArray;
   char[] WordArray;
   char[] Guesses;
-  int Errors;
   String[] Wordlist;
 
   public MysteryWord() {
@@ -19,28 +17,30 @@ public class MysteryWord {
     BlankWord = Blank(this.GuessWord);
     BlankArray = this.BlankWord.toCharArray();
     Guesses = new char[0];
-    Errors = 0;
-    Wordlist = new String[0];
+//    Wordlist = new String[0];
   }
 
   public String Word(){
-    // Generates a word to guess from a list
-    try {
-      File WordFile = new File("Woordlijst.txt");
-      Scanner ListScanner = new Scanner(WordFile);
-      System.out.print(ListScanner);
-      while (ListScanner.hasNext()) {
-        String data = ListScanner.nextLine();
-        this.Wordlist = Arrays.copyOf(this.Wordlist, this.Wordlist.length + 1);
-        this.Wordlist[this.Wordlist.length - 1] = data;
+    if(this.Wordlist == null) {
+      try {
+        this.Wordlist = new String[0];
+        InputStream is = MysteryWord.class.getClassLoader().getResourceAsStream("Woordlijst.txt");
+        Scanner ListScanner = new Scanner(is);
+        while (ListScanner.hasNext()) {
+          String data = ListScanner.nextLine();
+//          String data = ListScanner.next();
+          this.Wordlist = Arrays.copyOf(this.Wordlist, this.Wordlist.length + 1);
+          this.Wordlist[this.Wordlist.length - 1] = data;
+        }
+        return this.Wordlist[ThreadLocalRandom.current().nextInt(this.Wordlist.length)];
+      } catch (Exception e) {
+        System.out.println("File wasn't found, somehow");
       }
-//      ListScanner.close();
-      return this.Wordlist[ThreadLocalRandom.current().nextInt(Wordlist.length)];
+      return "aapjes";
     }
-    catch (FileNotFoundException e){
-      System.out.println("File wasn't found, somehow");
+    else{
+      return Wordlist[ThreadLocalRandom.current().nextInt(Wordlist.length)];
     }
-    return "aapjes";
   }
 
   public String Blank(String Word){
@@ -50,35 +50,18 @@ public class MysteryWord {
 
   public void BlankChange(String Letter){
     // Edits the blank word if the letter is in the word
-    if(this.GuessWord.contains(Letter)) {
-      for (int i = 0; i < this.WordArray.length; i++) {
-        if (this.WordArray[i] == Letter.charAt(0)) {
-          this.BlankArray[i] = Letter.charAt(0);
-        }
+    for (int i = 0; i < this.WordArray.length; i++) {
+      if (this.WordArray[i] == Letter.charAt(0)) {
+        this.BlankArray[i] = Letter.charAt(0);
       }
-      this.BlankWord = new String(BlankArray);
     }
-    else {
-      this.Errors++;
-      System.out.println("That letter is not in the word");
-    }
+    this.BlankWord = new String(BlankArray);
   }
 
   public void GuessFiller(String Letter){
     // Fills the Guesses character array with guessed letters
     this.Guesses = Arrays.copyOf(this.Guesses, this.Guesses.length + 1);
     this.Guesses[this.Guesses.length - 1] = Letter.charAt(0);
-  }
-
-  public void LetterGuesser(){
-    // Asks the user for a letter input
-    Scanner MyScan = new Scanner(System.in);
-    System.out.println("Guess a letter:");
-    String Letter = MyScan.nextLine().toLowerCase();
-    if(this.LetterChecker(Letter)){
-      this.GuessFiller(Letter);
-      this.BlankChange(Letter.toUpperCase());
-    }
   }
 
   public boolean LetterChecker(String Letter){
@@ -99,6 +82,14 @@ public class MysteryWord {
       }
     }
     return true;
+  }
+
+  public void Reset(){
+    GuessWord = Word().toUpperCase();
+    WordArray = this.GuessWord.toCharArray();
+    BlankWord = Blank(this.GuessWord);
+    BlankArray = this.BlankWord.toCharArray();
+    Guesses = new char[0];
   }
 
 }
